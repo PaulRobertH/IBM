@@ -1,5 +1,6 @@
 """Local semantic RAG with MiniLM embeddings and FLAN-T5; no IBM account."""
 import os
+import logging
 from functools import lru_cache
 from threading import Lock
 
@@ -97,6 +98,7 @@ def build_ui():
             except ValueError as error:
                 raise gr.Error(str(error)) from None
             except Exception:
+                logging.exception('Local library build failed')
                 raise gr.Error('Could not load files or download the embedding model. Check the terminal and internet connection.') from None
         def respond(library, query):
             try:
@@ -104,6 +106,7 @@ def build_ui():
             except ValueError as error:
                 raise gr.Error(str(error)) from None
             except Exception:
+                logging.exception('Local answer generation failed')
                 raise gr.Error('Model execution failed. Check the terminal, free memory and model download connection.') from None
         build.click(prepare, files, [state, status, answer, sources])
         ask.click(respond, [state, question], [answer, sources])
@@ -114,3 +117,4 @@ def build_ui():
 if __name__ == '__main__':
     build_ui().queue().launch(server_name=os.getenv('HOST', '127.0.0.1'),
                               server_port=int(os.getenv('PORT', '7860')), share=False)
+
